@@ -1,0 +1,74 @@
+The purine table copied to excel is very sloppy. There is strings and numbers that we need to separated.
+All row of data is copied to one cell
+So we split cell on space, but a sentence will split in a way where each word gets a cell
+First, read the purine table to python
+  pdf = pd.read_csv('Purine_Table.csv')
+Second, remove all NaN
+  pdf1 = pdf.replace(np.nan,'')
+  pdf2 = pdf.fillna('',inplace=True)
+Third, get all the columns of the dataframe
+  col = pdf1.columns
+Fouth, stores each line as a string in a list
+  pdf3 = list(pdf1[col].apply(lambda row: ' '.join(row.values.astype(str)).strip(),axis=1))
+Fifth, for each string, split on digit and return each line as a list within a list. 
+  pdf4 = [re.split(r'(\d*\.\d+|\d+)',var) for var in pdf3] 
+  pdf4 = [re.split('(\d+)',var) for var in pdf3] #will split on letters and digits but also split decimals of floats
+Now we need to remove the space
+l1 = []
+for ele in pdf4: 
+  s = [] 
+  for x in ele: 
+    if x.strip(): 
+      s.append(x) 
+  l1.append(s)
+
+Now our l1 list has list with data, that either have 3 values or 5 values, or values that will be used as columns
+What we want to do is get the lenght of each of the list, if len == 3 then, append two spaces after the first value. 
+This way all of our data lines up correctly
+for x in l1:
+  if len(x)==3:
+    x[1:1]=['','']
+
+Create df with newly created nested list
+uadf = pd.DataFrame(l1, columns=[x for x in string.ascii_uppercase[:5]])
+
+#For the sake of time, there will be some columns that start with % that we could not filter out with the Reg Ex
+#Since we know we column A, B and C should be one cell, well make a new column with this value
+uadf['F'] = uadf['A']+ uadf['B'] + uadf['C']
+
+
+#Then, lest see which column has the % in column C
+#search = '%'
+#uadf['C'].str.startswith(search)
+
+#Next, combine each of the identified row for the new cell in F
+
+uadf.loc[130]['A']=uadf.loc[130]['F'] 
+uadf.loc[132]['A']=uadf.loc[130]['F'] 
+uadf.loc[133]['A']=uadf.loc[133]['F'] 
+uadf.loc[134]['A']=uadf.loc[134]['F']
+uadf.loc[135]['A']=uadf.loc[135]['F']
+uadf.loc[223]['A']=uadf.loc[223]['F']
+
+#Then drop column F
+uadf.drop(['F'],axis=1, inplace=True)
+
+#We also have to add blank values for colum B,C 
+uadf.loc[130][['B','C']]=''
+uadf.loc[132][['B','C']]=''
+uadf.loc[133][['B','C']]=''
+uadf.loc[134][['B','C']]=''
+uadf.loc[135][['B','C']]=''
+uadf.loc[223][['B','C']]=''
+
+#Next take the values from column D to assign that to column B
+uadf.loc[uadf['C']=='','B'] = uadf['D']
+
+#we also need to remove the values from column Da
+uadf.loc[uadf['C']=='','D'] = ''
+
+uadf['F'] = pd.to_numeric(uadf['B']) 
+
+#Finally we export to csv
+uadf.to_csv('Purine_Table_Final.csv')
+
