@@ -1,3 +1,4 @@
+https://elevatehealthaz.com/wp-content/Purine%20Table.pdf
 The purine table copied to excel is very sloppy. There is strings and numbers that we need to separated.
 All row of data is copied to one cell
 So we split cell on space, but a sentence will split in a way where each word gets a cell
